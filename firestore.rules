@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Document ID: Firebase Auth uid (must equal request.auth.uid)
+    // Fields:
+    //   - email: string (required, valid email, <= 254) — PII, owner only
+    //   - grade: number (optional, 1-12)
+    //   - wordStreak: map { streak: number 0-10000, last: string YYYY-MM-DD } (optional)
+    //   - gramStreak: map { streak: number 0-10000, last: string YYYY-MM-DD } (optional)
+    //   - lastTest: map (optional) { level: string <= 40, right: number, total: number,
+    //       pct: number 0-100, weak: list of strings <= 8 items, at: timestamp }
+    //   - serverNow: timestamp (optional, for clock sync)
+    //   - createdAt: timestamp (required, immutable)
+    //   - updatedAt: timestamp (required)
+    //
+    // Collection: users/{uid}/wrong
+    // Document ID: short id string <= 200
+    // Fields:
+    //   - kind: 'test' | 'word' | 'grammar'
+    //   - level: string <= 40
+    //   - en, zh, prompt, explain: string <= 2000
+    //   - answer, user: list of strings (<= 8, each <= 200)
+    //   - options: list of maps (<= 8)
+    //   - at: timestamp
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isValidEmail(email) {
+      return email is string && email.size() > 2 && email.size() <= 254 &&
+        email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    function isYmd(s) {
+      return s is string && s.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+    function isValidStreak(m) {
+      return m is map && m.keys().hasOnly(['streak', 'last']) &&
+        m.streak is number && m.streak >= 0 && m.streak <= 10000 &&
+        isYmd(m.last);
+    }
+    function isValidLastTest(m) {
+      return m is map &&
+        m.keys().hasOnly(['level', 'right', 'total', 'pct', 'weak', 'at']) &&
+        m.level is string && m.level.size() > 0 && m.level.size() <= 40 &&
+        m.right is number && m.right >= 0 && m.right <= 100 &&
+        m.total is number && m.total >= 1 && m.total <= 100 &&
+        m.pct is number && m.pct >= 0 && m.pct <= 100 &&
+        m.weak is list && m.weak.size() <= 8 &&
+        m.at is timestamp;
+    }
+    function isValidUser(data) {
+      return data.keys().hasOnly(['email', 'grade', 'wordStreak', 'gramStreak', 'lastTest', 'serverNow', 'createdAt', 'updatedAt']) &&
+        isValidEmail(data.email) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        (!('grade' in data) || (data.grade is number && data.grade >= 1 && data.grade <= 12)) &&
+        (!('wordStreak' in data) || isValidStreak(data.wordStreak)) &&
+        (!('gramStreak' in data) || isValidStreak(data.gramStreak)) &&
+        (!('lastTest' in data) || isValidLastTest(data.lastTest)) &&
+        (!('serverNow' in data) || data.serverNow is timestamp);
+    }
+    function isValidStringList(list, maxItems, maxLen) {
+      return list is list && list.size() <= maxItems;
+    }
+    function isValidWrong(data) {
+      return data.keys().hasOnly(['kind', 'level', 'en', 'zh', 'prompt', 'explain', 'answer', 'user', 'options', 'at']) &&
+        data.kind in ['test', 'word', 'grammar'] &&
+        data.level is string && data.level.size() <= 40 &&
+        data.en is string && data.en.size() <= 200 &&
+        data.zh is string && data.zh.size() <= 500 &&
+        data.prompt is string && data.prompt.size() <= 2000 &&
+        data.explain is string && data.explain.size() <= 2000 &&
+        data.answer is list && data.answer.size() <= 8 &&
+        data.user is list && data.user.size() <= 8 &&
+        data.options is list && data.options.size() <= 8 &&
+        data.at is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.email == request.auth.token.email;
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.email == resource.data.email;
+      allow delete: if isOwner(userId);
+
+      match /wrong/{itemId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && itemId.size() > 0 && itemId.size() <= 200 &&
+          isValidWrong(request.resource.data) &&
+          request.resource.data.at == request.time;
+        allow update: if isOwner(userId) && isValidWrong(request.resource.data) &&
+          request.resource.data.at == resource.data.at;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

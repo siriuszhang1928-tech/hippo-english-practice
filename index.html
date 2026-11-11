@@ -11,6 +11,19 @@
 </head>
 <body>
   <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="status-bar">
+    <span class="live-clock" id="live-clock" aria-live="polite">登录后显示上海时间</span>
+    <span class="account-slot" id="account-slot">
+      <span id="account-logged-out">
+        <button type="button" class="text-link" id="btn-open-auth">登录 / 注册</button>
+      </span>
+      <span id="account-logged-in" hidden>
+        <span class="who-email" id="who-email"></span>
+        <button type="button" class="text-link" id="btn-logout">退出</button>
+      </span>
+    </span>
+  </div>
+  <p class="save-note" id="save-note" hidden></p>
 
   <!-- ============ 首页 ============ -->
   <div class="wrap" id="screen-home">
@@ -31,6 +44,7 @@
       <span class="sel-arrow">▼</span>
     </div>
     <div class="level-tag" id="home-level-tag"></div>
+    <p class="last-test" id="home-last" hidden></p>
 
     <div class="mods" id="home-mods">
       <button class="mod-card" data-go="test" disabled>
@@ -59,6 +73,8 @@
       </button>
     </div>
 
+    <p class="gate-note" id="gate-note">小测、单词打卡、语法打卡和错题本需要登录。注册只保存练习进度，不是官方比赛报名。</p>
+
     <div class="home-links">
       <button class="text-link" id="btn-wrongbook">📒 错题本</button>
       <button class="text-link" id="btn-materials">📎 学习资料</button>
@@ -66,13 +82,36 @@
     <p class="foot-note">本站是趣味挑战练习页，不是 Global Association 官方报名网站。题目与词汇来自 2026 年初轮真题和官方单词表。</p>
   </div>
 
+  <!-- ============ 登录 / 注册 ============ -->
+  <div class="wrap" id="screen-auth" hidden>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
+    <h2 class="page-h" id="auth-title">登录</h2>
+    <p class="check-sub">练习账号只用来保存年级、打卡和错题。不是官方比赛报名。</p>
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab on" id="tab-login">登录</button>
+      <button type="button" class="auth-tab" id="tab-register">注册</button>
+    </div>
+    <form class="auth-form" id="auth-form" novalidate>
+      <label class="field">邮箱
+        <input type="email" id="auth-email" autocomplete="username" inputmode="email" placeholder="name@example.com">
+      </label>
+      <label class="field">密码
+        <input type="password" id="auth-password" autocomplete="current-password" placeholder="至少 6 位">
+      </label>
+      <p class="auth-hint">密码至少 6 位。忘记密码可以让我们发一封重置邮件。</p>
+      <p class="auth-msg" id="auth-msg" hidden></p>
+      <button class="btn teal" type="submit" id="auth-submit">登录</button>
+    </form>
+    <button class="text-link center" id="btn-forgot" type="button">忘记密码？发送重置邮件</button>
+  </div>
+
   <!-- ============ 小测：开屏 ============ -->
   <div class="wrap" id="screen-test-start" hidden>
-    <button class="back-link" data-back="home">← 返回首页</button>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
     <div class="hero fade-in">
       <span class="mascot"><img src="img/mascot.png" alt=""></span>
       <h1>河马英语<br><em>初轮样题小测</em></h1>
-      <p>6 道精选初轮真题，做完就知道你的正确率<br>达标线为 60% 以上</p>
+      <p>6 道精选初轮真题，做完就知道你的正确率<br>达标线为 60% 以上。每次开始都会重新打乱题目顺序。</p>
     </div>
     <div class="pick-title">确认你的年级</div>
     <div class="sel-wrap" id="test-sel-wrap">
@@ -80,7 +119,7 @@
       <span class="sel-arrow">▼</span>
     </div>
     <div class="level-tag" id="test-level-tag"></div>
-    <button class="btn teal" id="btn-start" disabled>开始做题 ▶</button>
+    <button class="btn teal" id="btn-start" type="button" disabled>开始做题 ▶</button>
     <p class="foot-note">题目选自 2026 年河马英语初轮 Reading &amp; Use of English 真题</p>
   </div>
 
@@ -92,8 +131,8 @@
     </div>
     <div class="qcard" id="qcard"></div>
     <div class="quiz-btns">
-      <button class="btn-ghost" id="btn-prev">← 上一题</button>
-      <button class="btn" id="btn-next" disabled>下一题 →</button>
+      <button class="btn-ghost" id="btn-prev" type="button">← 上一题</button>
+      <button class="btn" id="btn-next" type="button" disabled>下一题 →</button>
     </div>
   </div>
 
@@ -124,6 +163,8 @@
     <div class="result-card" id="result-card">
       <p class="rc-lead" id="rc-lead"></p>
       <div class="rc-body" id="rc-body"></div>
+      <div class="eval-block" id="eval-block"></div>
+      <p class="eval-note" id="result-save"></p>
     </div>
 
     <div class="ans-head">📋 答案对照表</div>
@@ -132,16 +173,16 @@
     </div>
 
     <div class="result-actions">
-      <button class="btn teal" id="btn-to-words">去单词打卡 →</button>
-      <button class="btn-ghost wide" id="btn-to-grammar">去语法打卡</button>
-      <button class="text-link center" id="btn-result-home">返回首页</button>
+      <button class="btn teal" id="btn-to-words" type="button">去单词打卡 →</button>
+      <button class="btn-ghost wide" id="btn-to-grammar" type="button">去语法打卡</button>
+      <button class="text-link center" id="btn-result-home" type="button">返回首页</button>
     </div>
     <p class="foot-note">本页为样题练习，正式初轮题目数量更多，也包含阅读长题。</p>
   </div>
 
   <!-- ============ 单词打卡 ============ -->
   <div class="wrap" id="screen-words" hidden>
-    <button class="back-link" data-back="home">← 返回首页</button>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
     <div class="check-head">
       <h2>单词打卡</h2>
       <div class="streak" id="word-streak">连续 0 天</div>
@@ -150,14 +191,14 @@
     <div class="bar slim"><i id="word-bar"></i></div>
     <div class="qcard" id="word-card"></div>
     <div class="quiz-btns" id="word-btns" hidden>
-      <button class="btn" id="word-next">下一词 →</button>
+      <button class="btn" id="word-next" type="button">下一词 →</button>
     </div>
     <div class="check-end" id="word-end" hidden></div>
   </div>
 
   <!-- ============ 语法打卡 ============ -->
   <div class="wrap" id="screen-grammar" hidden>
-    <button class="back-link" data-back="home">← 返回首页</button>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
     <div class="check-head">
       <h2>词汇语法打卡</h2>
       <div class="streak" id="grammar-streak">连续 0 天</div>
@@ -166,22 +207,22 @@
     <div class="bar slim"><i id="grammar-bar"></i></div>
     <div class="qcard" id="grammar-card"></div>
     <div class="quiz-btns" id="grammar-btns" hidden>
-      <button class="btn" id="grammar-next">下一题 →</button>
+      <button class="btn" id="grammar-next" type="button">下一题 →</button>
     </div>
     <div class="check-end" id="grammar-end" hidden></div>
   </div>
 
   <!-- ============ 错题本 ============ -->
   <div class="wrap" id="screen-wrong" hidden>
-    <button class="back-link" data-back="home">← 返回首页</button>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
     <h2 class="page-h">错题本</h2>
-    <p class="check-sub">只保存在这台设备上，不会上传。</p>
+    <p class="check-sub">记在当前登录的账号里，换一台设备登录也能看到。大约保留最近 200 条。</p>
     <div id="wrong-body"></div>
   </div>
 
   <!-- ============ 学习资料 ============ -->
   <div class="wrap" id="screen-materials" hidden>
-    <button class="back-link" data-back="home">← 返回首页</button>
+    <button class="back-link" data-back="home" type="button">← 返回首页</button>
     <h2 class="page-h">学习资料</h2>
     <p class="check-sub">下面是官方学术材料二维码（真题、考纲、单词表），不是报名通道。</p>
     <div class="qr-card-static">
@@ -190,7 +231,12 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/logic.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
