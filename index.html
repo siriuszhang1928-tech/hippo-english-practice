@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#89CFF0">
+  <title>河马英语练习</title>
+  <link rel="icon" type="image/png" href="img/favicon-32.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <!-- ============ 首页 ============ -->
+  <div class="wrap" id="screen-home">
+    <header class="topbar fade-in">
+      <img class="logo" src="img/logo.png" alt="Global Association Hippo">
+    </header>
+    <div class="hero fade-in">
+      <span class="mascot"><img src="img/mascot.png" alt="河马英语"></span>
+      <h1>河马英语练习<br><em>趣味挑战 · 日常打卡</em></h1>
+      <p>6 道初轮真题小测，加上单词与语法打卡<br>用官方材料练一练，看看自己处在哪个级别</p>
+    </div>
+
+    <div class="pick-title">选择你的年级</div>
+    <div class="sel-wrap" id="home-sel-wrap">
+      <select class="sel" id="home-grade" aria-label="选择你的年级">
+        <option value="">请选择你的年级</option>
+      </select>
+      <span class="sel-arrow">▼</span>
+    </div>
+    <div class="level-tag" id="home-level-tag"></div>
+
+    <div class="mods" id="home-mods">
+      <button class="mod-card" data-go="test" disabled>
+        <span class="mod-ico">📝</span>
+        <span class="mod-body">
+          <b>初轮样题小测</b>
+          <small>6 道 2026 年初轮真题，测一测正确率</small>
+        </span>
+        <span class="mod-chev">›</span>
+      </button>
+      <button class="mod-card" data-go="words" disabled>
+        <span class="mod-ico">📒</span>
+        <span class="mod-body">
+          <b>单词打卡</b>
+          <small>每天 8 个词，英汉互选，还能拼写</small>
+        </span>
+        <span class="mod-chev">›</span>
+      </button>
+      <button class="mod-card" data-go="grammar" disabled>
+        <span class="mod-ico">✨</span>
+        <span class="mod-body">
+          <b>词汇语法打卡</b>
+          <small>初轮真题里的短填空与选择题</small>
+        </span>
+        <span class="mod-chev">›</span>
+      </button>
+    </div>
+
+    <div class="home-links">
+      <button class="text-link" id="btn-wrongbook">📒 错题本</button>
+      <button class="text-link" id="btn-materials">📎 学习资料</button>
+    </div>
+    <p class="foot-note">本站是趣味挑战练习页，不是 Global Association 官方报名网站。题目与词汇来自 2026 年初轮真题和官方单词表。</p>
+  </div>
+
+  <!-- ============ 小测：开屏 ============ -->
+  <div class="wrap" id="screen-test-start" hidden>
+    <button class="back-link" data-back="home">← 返回首页</button>
+    <div class="hero fade-in">
+      <span class="mascot"><img src="img/mascot.png" alt=""></span>
+      <h1>河马英语<br><em>初轮样题小测</em></h1>
+      <p>6 道精选初轮真题，做完就知道你的正确率<br>达标线为 60% 以上</p>
+    </div>
+    <div class="pick-title">确认你的年级</div>
+    <div class="sel-wrap" id="test-sel-wrap">
+      <select class="sel" id="test-grade" aria-label="选择你的年级"></select>
+      <span class="sel-arrow">▼</span>
+    </div>
+    <div class="level-tag" id="test-level-tag"></div>
+    <button class="btn teal" id="btn-start" disabled>开始做题 ▶</button>
+    <p class="foot-note">题目选自 2026 年河马英语初轮 Reading &amp; Use of English 真题</p>
+  </div>
+
+  <!-- ============ 小测：答题 ============ -->
+  <div class="wrap" id="screen-quiz" hidden>
+    <div class="quiz-top">
+      <span class="quiz-count" id="quiz-count">1 / 6</span>
+      <div class="bar"><i id="bar-fill"></i></div>
+    </div>
+    <div class="qcard" id="qcard"></div>
+    <div class="quiz-btns">
+      <button class="btn-ghost" id="btn-prev">← 上一题</button>
+      <button class="btn" id="btn-next" disabled>下一题 →</button>
+    </div>
+  </div>
+
+  <!-- ============ 小测：结果 ============ -->
+  <div class="wrap" id="screen-result" hidden>
+    <div class="result-top">
+      <span class="trophy" id="res-emoji">🏆</span><br>
+      <span class="pass-badge" id="res-badge">🎉 恭喜达标 🎉</span>
+      <div class="big-title" id="res-title">太厉害了！</div>
+      <div class="ring-box">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="grad-hot" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#A1CAF1"/><stop offset="1" stop-color="#89CFF0"/>
+            </linearGradient>
+            <linearGradient id="grad-cool" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#c5e8f8"/><stop offset="1" stop-color="#7ec8ee"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="100" cy="100" r="84"/>
+          <circle class="ring-val" id="ring" cx="100" cy="100" r="84"
+            stroke-dasharray="527.8" stroke-dashoffset="527.8"/>
+        </svg>
+        <div class="ring-txt"><b id="pct" class="hot">0%</b><span>正确率</span></div>
+      </div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <p class="rc-lead" id="rc-lead"></p>
+      <div class="rc-body" id="rc-body"></div>
+    </div>
+
+    <div class="ans-head">📋 答案对照表</div>
+    <div class="ans-table" id="ans-table">
+      <div class="ans-row head"><span class="cell">题号</span><span class="cell">你的答案</span><span class="cell">正确答案</span><span class="cell">结果</span></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn teal" id="btn-to-words">去单词打卡 →</button>
+      <button class="btn-ghost wide" id="btn-to-grammar">去语法打卡</button>
+      <button class="text-link center" id="btn-result-home">返回首页</button>
+    </div>
+    <p class="foot-note">本页为样题练习，正式初轮题目数量更多，也包含阅读长题。</p>
+  </div>
+
+  <!-- ============ 单词打卡 ============ -->
+  <div class="wrap" id="screen-words" hidden>
+    <button class="back-link" data-back="home">← 返回首页</button>
+    <div class="check-head">
+      <h2>单词打卡</h2>
+      <div class="streak" id="word-streak">连续 0 天</div>
+    </div>
+    <p class="check-sub" id="word-sub"></p>
+    <div class="bar slim"><i id="word-bar"></i></div>
+    <div class="qcard" id="word-card"></div>
+    <div class="quiz-btns" id="word-btns" hidden>
+      <button class="btn" id="word-next">下一词 →</button>
+    </div>
+    <div class="check-end" id="word-end" hidden></div>
+  </div>
+
+  <!-- ============ 语法打卡 ============ -->
+  <div class="wrap" id="screen-grammar" hidden>
+    <button class="back-link" data-back="home">← 返回首页</button>
+    <div class="check-head">
+      <h2>词汇语法打卡</h2>
+      <div class="streak" id="grammar-streak">连续 0 天</div>
+    </div>
+    <p class="check-sub" id="grammar-sub"></p>
+    <div class="bar slim"><i id="grammar-bar"></i></div>
+    <div class="qcard" id="grammar-card"></div>
+    <div class="quiz-btns" id="grammar-btns" hidden>
+      <button class="btn" id="grammar-next">下一题 →</button>
+    </div>
+    <div class="check-end" id="grammar-end" hidden></div>
+  </div>
+
+  <!-- ============ 错题本 ============ -->
+  <div class="wrap" id="screen-wrong" hidden>
+    <button class="back-link" data-back="home">← 返回首页</button>
+    <h2 class="page-h">错题本</h2>
+    <p class="check-sub">只保存在这台设备上，不会上传。</p>
+    <div id="wrong-body"></div>
+  </div>
+
+  <!-- ============ 学习资料 ============ -->
+  <div class="wrap" id="screen-materials" hidden>
+    <button class="back-link" data-back="home">← 返回首页</button>
+    <h2 class="page-h">学习资料</h2>
+    <p class="check-sub">下面是官方学术材料二维码（真题、考纲、单词表），不是报名通道。</p>
+    <div class="qr-card-static">
+      <img class="qr-img" src="img/materials-qr.png" alt="河马英语学术材料二维码">
+      <span class="qr-tip">📱 微信扫一扫 · 打开学术材料包</span>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
